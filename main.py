@@ -193,30 +193,24 @@ class App(ctk.CTk):
                 'outtmpl': os.path.join(self.DOWNLOAD_DIR, '%(title)s.%(ext)s'),
             }
             
+            if getattr(sys, 'frozen', False):
+                ffmpeg_path = sys._MEIPASS
+            else:
+                ffmpeg_path = "."
+            ydl_opts['ffmpeg_location'] = ffmpeg_path
             if download_type == "影片 (MP4)":
                 chosen_resolution = self.resolution_var.get().replace('p', '')
                 ydl_opts['format'] = f'bestvideo[height<={chosen_resolution}][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
             
             elif download_type == "音訊 (MP3)":
                 ydl_opts['format'] = 'bestaudio/best'
-                
-                # *** 這是需要加回來的關鍵程式碼 ***
-                # 判斷程式是否被打包成 exe
-                if getattr(sys, 'frozen', False):
-                    # 如果是 exe，FFmpeg 會在 _MEIPASS 暫存資料夾的根目錄
-                    ffmpeg_path = sys._MEIPASS
-                else:
-                    # 如果是直接執行 .py，假設 ffmpeg.exe 在專案根目錄
-                    ffmpeg_path = "."
-                
                 ydl_opts['postprocessors'] = [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }]
-                # 明確告訴 yt-dlp FFmpeg 執行檔所在的 "目錄"
-                ydl_opts['ffmpeg_location'] = ffmpeg_path
 
+            # 執行下載
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
