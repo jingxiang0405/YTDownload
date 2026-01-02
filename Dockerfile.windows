@@ -1,0 +1,20 @@
+# 使用官方的 Windows Python 映像
+# 選擇一個與 Windows 10/11 相容的 servercore 版本
+FROM python:3.11-windowsservercore
+
+# 設定工作目錄
+WORKDIR /app
+
+# 複製依賴檔案並安裝
+# COPY requirements.txt .
+# RUN pip install -r requirements.txt
+# (或者直接安裝)
+RUN pip install pyinstaller yt-dlp customtkinter
+
+# 複製整個專案到容器中
+COPY . .
+
+# 執行 PyInstaller 命令
+# 注意：在 PowerShell 中，續行符是 ` (倒引號)
+RUN pyinstaller --onefile --windowed --name "YouTubeDownloader" --add-data "ffmpeg.exe:." --add-data "ffprobe.exe:." main.py
+
