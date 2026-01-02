@@ -41,13 +41,10 @@ jobs:
         shell: powershell
 
       - name: Build the executable
+
         run: |
-          pyinstaller --onefile --windowed --name "YouTubeDownloader" \
-            --hidden-import "customtkinter" \
-            --add-data "${{ steps.customtkinter_path.outputs.path }};customtkinter/" \
-            --add-data "ffmpeg_bin/ffmpeg.exe:." \
-            --add-data "ffmpeg_bin/ffprobe.exe:." \
-            main.py
+          pyinstaller --% --onefile --windowed --name "YouTubeDownloader" --hidden-import "customtkinter" --add-data "${{ steps.customtkinter_path.outputs.path }};customtkinter/" --add-data "ffmpeg_bin/ffmpeg.exe:." --add-data "ffmpeg_bin/ffprobe.exe:." main.py
+        shell: powershell
             
       - name: Upload artifact
         uses: actions/upload-artifact@v4
