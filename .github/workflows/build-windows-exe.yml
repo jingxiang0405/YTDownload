@@ -22,8 +22,10 @@ jobs:
         run: |
           Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z" -OutFile "ffmpeg.7z"
           7z x ffmpeg.7z -oFFMPEG
+          $extracted_folder = Get-ChildItem -Path "FFMPEG" -Directory | Select-Object -First 1
+          $bin_path = Join-Path -Path $extracted_folder.FullName -ChildPath "bin\*"
           New-Item -ItemType Directory -Force -Path "ffmpeg_bin"
-          Move-Item -Path "FFMPEG/ffmpeg-7.0-full_build/bin/*" -Destination "ffmpeg_bin"
+          Move-Item -Path $bin_path -Destination "ffmpeg_bin"
         shell: powershell
 
       - name: Install dependencies
