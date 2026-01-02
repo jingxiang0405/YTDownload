@@ -18,19 +18,35 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install FFmpeg using Chocolatey
-        run: choco install ffmpeg -y
+      - name: Download and Extract FFmpeg
+        run: |
+          Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z" -OutFile "ffmpeg.7z"
+          7z x ffmpeg.7z -oFFMPEG
+          New-Item -ItemType Directory -Force -Path "ffmpeg_bin"
+          Move-Item -Path "FFMPEG/ffmpeg-7.0-full_build/bin/*" -Destination "ffmpeg_bin"
+        shell: powershell
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller yt-dlp customtkinter
 
-      - name: Build the executable
-
+      - name: Get CustomTkinter path
+        id: customtkinter_path
         run: |
-          pyinstaller --onefile --windowed --name "YouTubeDownloader" main.py
-          
+          $path = (Get-Command python).Source | Split-Path | Join-Path -ChildPath "Lib\site-packages\customtkinter"
+          echo "path=$path" >> $env:GITHUB_OUTPUT
+        shell: powershell
+
+      - name: Build the executable
+        run: |
+          pyinstaller --onefile --windowed --name "YouTubeDownloader" \
+            --hidden-import "customtkinter" \
+            --add-data "${{ steps.customtkinter_path.outputs.path }};customtkinter/" \
+            --add-data "ffmpeg_bin/ffmpeg.exe:." \
+            --add-data "ffmpeg_bin/ffprobe.exe:." \
+            main.py
+            
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

@@ -183,6 +183,7 @@ class App(ctk.CTk):
         self.open_folder_checkbox.configure(state="normal")
 
     def download_media(self):
+        """只負責下載，完成後透過 self.after 呼叫 on_download_complete"""
         url = self.url_entry.get()
         download_type = self.download_type_var.get()
         
@@ -199,13 +200,13 @@ class App(ctk.CTk):
             elif download_type == "音訊 (MP3)":
                 ydl_opts['format'] = 'bestaudio/best'
                 
-                # *** 這是新增的修改 ***
+                # *** 這是需要加回來的關鍵程式碼 ***
                 # 判斷程式是否被打包成 exe
                 if getattr(sys, 'frozen', False):
-                    # 如果是 exe，FFmpeg 會在暫存資料夾的根目錄
-                    ffmpeg_path = os.path.join(sys._MEIPASS, "ffmpeg.exe")
+                    # 如果是 exe，FFmpeg 會在 _MEIPASS 暫存資料夾的根目錄
+                    ffmpeg_path = sys._MEIPASS
                 else:
-                    # 如果是直接執行 .py，FFmpeg 在專案根目錄
+                    # 如果是直接執行 .py，假設 ffmpeg.exe 在專案根目錄
                     ffmpeg_path = "."
                 
                 ydl_opts['postprocessors'] = [{
@@ -213,7 +214,7 @@ class App(ctk.CTk):
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }]
-                # 明確告訴 yt-dlp FFmpeg 的位置
+                # 明確告訴 yt-dlp FFmpeg 執行檔所在的 "目錄"
                 ydl_opts['ffmpeg_location'] = ffmpeg_path
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -223,7 +224,6 @@ class App(ctk.CTk):
 
         except Exception as e:
             self.after(0, self.on_download_complete, False, e)
-
 # --- 啟動應用程式 ---
 if __name__ == "__main__":
     app = App()
